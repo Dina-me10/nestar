@@ -58,11 +58,13 @@ public async updateMember(
 	return this.memberService.updateMember(memberId, input);
 }
 
+@UseGuards(WithoutGuard)
 @Query(() => Member)
-public async getMember(@Args('memberId') input: string): Promise<Member> {
+public async getMember(@Args('memberId') input: string, @AuthMember('_id') memberId: ObjectId): Promise<Member> {
 	console.log('Query: getMember');
+	console.log('memberId:', memberId);
 	const targetId = shapeIntoMongoObjectId(input);
-	return this.memberService.getMember(targetId);
+	return this.memberService.getMember(memberId , targetId);
 }
 
 	/** ADMIN **/
