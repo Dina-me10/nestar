@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import type { ObjectId } from 'mongoose';
 import moment from 'moment';
 import { Property, Properties } from '../../libs/dto/property/property';
-import { PropertyInput, PropertiesInquiry, AgentPropertiesInquiry } from '../../libs/dto/property/property.input';
+import { PropertyInput, PropertiesInquiry, AgentPropertiesInquiry, AllPropertiesInquiry } from '../../libs/dto/property/property.input';
 import { PropertyUpdate } from '../../libs/dto/property/property.update';
 import { Message } from '../../libs/enums/common.enum';
 import { Direction } from '../../libs/enums/common.enum';
@@ -191,4 +191,34 @@ export class PropertyService {
 
 		return result[0];
 	}
+
+	public async getAllPropertiesByAdmin(input: AllPropertiesInquiry): Promise<Properties> {
+	const { propertyStatus, propertyLocationList } = input.search;
+	const match: T = {};
+	const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
+
+	if (propertyStatus) match.propertyStatus = propertyStatus;
+	if (propertyLocationList) match.propertyLocation = { $in: propertyLocationList };
+
+	const result = await this.propertyModel
+		.aggregate([
+			{ $match: match },
+			{ $sort: sort },
+			{
+				$facet: {
+					list: [
+						{ $skip: (input.page - 1) * input.limit },
+						{ $limit: input.limit },
+						lookupMember,
+						{ $unwind: '$memberData' },
+					],
+					metaCounter: [{ $count: 'total' }],
+				},
+			},
+		])
+		.exec();
+	if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+	return result[0];
+}
 }
