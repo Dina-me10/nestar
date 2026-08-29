@@ -1,15 +1,15 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { PropertyService } from './property.service';
-import { Properties, Property } from '../../libs/dto/property/property';
-import { PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.input';
+import { Property, Properties } from '../../libs/dto/property/property';
+import { PropertyInput, PropertiesInquiry, AgentPropertiesInquiry } from '../../libs/dto/property/property.input';
+import { PropertyUpdate } from '../../libs/dto/property/property.update';
 import { MemberType } from '../../libs/enums/member.enum';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
 import { WithoutGuard } from '../auth/guards/without.guard';
 import { shapeIntoMongoObjectId } from '../../libs/config';
-import { PropertyUpdate } from '../../libs/dto/property/property.update';
 import type { ObjectId } from 'mongoose';
 
 @Resolver()
@@ -39,7 +39,7 @@ export class PropertyResolver {
 		return await this.propertyService.getProperty(memberId, propertyId);
 	}
 
-		@Roles(MemberType.AGENT)
+	@Roles(MemberType.AGENT)
 	@UseGuards(RolesGuard)
 	@Mutation((returns) => Property)
 	public async updateProperty(
@@ -50,7 +50,8 @@ export class PropertyResolver {
 		input._id = shapeIntoMongoObjectId(input._id);
 		return await this.propertyService.updateProperty(memberId, input);
 	}
-		@UseGuards(WithoutGuard)
+
+	@UseGuards(WithoutGuard)
 	@Query((returns) => Properties)
 	public async getProperties(
 		@Args('input') input: PropertiesInquiry,
@@ -58,5 +59,16 @@ export class PropertyResolver {
 	): Promise<Properties> {
 		console.log('Query: getProperties');
 		return await this.propertyService.getProperties(memberId, input);
+	}
+
+	@Roles(MemberType.AGENT)
+	@UseGuards(RolesGuard)
+	@Query((returns) => Properties)
+	public async getAgentProperties(
+		@Args('input') input: AgentPropertiesInquiry,
+		@AuthMember('_id') memberId: ObjectId,
+	): Promise<Properties> {
+		console.log('Query: getAgentProperties');
+		return await this.propertyService.getAgentProperties(memberId, input);
 	}
 }
