@@ -42,29 +42,30 @@ export class PropertyService {
 		}
 	}
 
-	public async getProperty(memberId: ObjectId, propertyId: ObjectId): Promise<Property> {
-		const search: T = {
-			_id: propertyId,
-			propertyStatus: PropertyStatus.ACTIVE,
-		};
+      public async getProperty(memberId: ObjectId, propertyId: ObjectId): Promise<Property> {
+	const search: T = {
+		_id: propertyId,
+		propertyStatus: PropertyStatus.ACTIVE,
+	};
 
-		const targetProperty: Property | null = await this.propertyModel.findOne(search).lean().exec();
-		if (!targetProperty) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+	const targetProperty: Property | null = await this.propertyModel.findOne(search).lean().exec();
+	if (!targetProperty) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 
-		if (memberId) {
-			const viewInput = { memberId: memberId, viewRefId: propertyId, viewGroup: ViewGroup.PROPERTY };
-			const newView = await this.viewService.recordView(viewInput);
-			if (newView) {
-				await this.propertyStatsEditor({ _id: propertyId, targetKey: 'propertyViews', modifier: 1 });
-				targetProperty.propertyViews++;
-			}
-
-			// meLiked
+	if (memberId) {
+		const viewInput = { memberId: memberId, viewRefId: propertyId, viewGroup: ViewGroup.PROPERTY };
+		const newView = await this.viewService.recordView(viewInput);
+		if (newView) {
+			await this.propertyStatsEditor({ _id: propertyId, targetKey: 'propertyViews', modifier: 1 });
+			targetProperty.propertyViews++;
 		}
 
-		targetProperty.memberData = await this.memberService.getMember(null as unknown as ObjectId, targetProperty.memberId);
-		return targetProperty;
+		const likeInput = { memberId: memberId, likeRefId: propertyId, likeGroup: LikeGroup.PROPERTY };
+		targetProperty.meLiked = await this.likeService.checkLikeExistence(likeInput);
 	}
+
+	targetProperty.memberData = await this.memberService.getMember(null, targetProperty.memberId);
+	return targetProperty;
+}
 
 	public async updateProperty(memberId: ObjectId, input: PropertyUpdate): Promise<Property> {
 		const { _id, soldAt, deletedAt } = input;
