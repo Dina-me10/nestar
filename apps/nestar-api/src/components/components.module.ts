@@ -10,12 +10,13 @@ import { BoardArticleModule } from './board-article/board-article.module';
 
 @Module({
   imports: [MemberModule,
-     PropertyModule,
       AuthModule, 
-      CommentModule,
+      PropertyModule,
+      BoardArticleModule,
        LikeModule,
         ViewModule,
+        CommentModule,
          FollowModule,
-          BoardArticleModule]
+          ]
 })
 export class ComponentsModule {}
