@@ -3,6 +3,7 @@ import { MemberResolver } from './member.resolver';
 import { MemberService } from './member.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import MemberSchema from '../../libs/schemas/Member.model';
+import FollowSchema from '../../libs/schemas/Follow.model';
 import { AuthModule } from '../auth/auth.module';
 import { ViewModule } from '../view/view.module';
 import { LikeModule } from '../like/like.module';
@@ -13,6 +14,16 @@ import { LikeModule } from '../like/like.module';
 			{
 				name: 'Member',
 				schema: MemberSchema,
+			},
+		]),
+		MongooseModule.forFeature([
+			{
+				name: 'Member',
+				schema: MemberSchema,
+			},
+			{
+				name: 'Follow',
+				schema: FollowSchema,
 			},
 		]),
 		AuthModule,
