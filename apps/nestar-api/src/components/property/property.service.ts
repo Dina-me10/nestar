@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import type { ObjectId } from 'mongoose';
 import moment from 'moment';
 import { Property, Properties } from '../../libs/dto/property/property';
-import { PropertyInput, PropertiesInquiry, AgentPropertiesInquiry, AllPropertiesInquiry } from '../../libs/dto/property/property.input';
+import { PropertyInput, PropertiesInquiry, AgentPropertiesInquiry, AllPropertiesInquiry, OrdinaryInquiry } from '../../libs/dto/property/property.input';
 import { PropertyUpdate } from '../../libs/dto/property/property.update';
 import { Message } from '../../libs/enums/common.enum';
 import { Direction } from '../../libs/enums/common.enum';
@@ -153,6 +153,10 @@ export class PropertyService {
 			});
 		}
 	}
+
+	public async getFavorites(memberId: ObjectId, input: OrdinaryInquiry): Promise<Properties> {
+	return await this.likeService.getFavoriteProperties(memberId, input);
+}
 
 	public async propertyStatsEditor(input: StatisticModifier): Promise<Property | null> {
 		const { _id, targetKey, modifier } = input;
